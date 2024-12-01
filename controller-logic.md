@@ -8,8 +8,6 @@
   - [Архитектура контроллера](#архитектура-контроллера)
     - [ИнтерфейсАналитики](#интерфейсаналитики)
     - [ИнтерфейсФреймворка](#интерфейсфреймворка)
-  - [Процессы](#процессы)
-    - [Основной процесс](#основной-процесс)
   - [Структуры данных](#структуры-данных)
     - [АналитическаяСвеча](#аналитическаясвеча)
     - [АналитическаяЗаявка](#аналитическаязаявка)
@@ -107,7 +105,26 @@ classDiagram
 
 То, как происходит работа с интерфейсом, можно посмотреть [здесь](#общий-процесс).
 
+Процесс работы:
+```mermaid
+sequenceDiagram
+    participant Framework as Фреймворк
+    participant AnalyticsInterface as ИнтерфейсАналитики
+    participant Analytics as Аналитика
+    participant Broker as Брокер
 
+    activate Framework
+    Framework->>AnalyticsInterface: обработать_свечи(аналитические свечи)
+    AnalyticsInterface->>Analytics: передаёт свечи
+    Analytics-->>AnalyticsInterface: возвращает заявки
+    AnalyticsInterface-->>Framework: возвращает заявки
+    Framework->>Broker: отправляет заявки
+    deactivate Framework
+    Broker-->>Framework: возвращает ответы
+    activate Framework
+    Framework->>AnalyticsInterface: обработать_ответы_на_заявки(ответы на заявки)
+    deactivate Framework
+```
 <!-- Как пользоваться интерфейсом?
 
 С помощью обработать_свечи фреймворк отправляет в аналитику свечи и в ответ получает заявки. Фреймворк отправляет эти заявки брокеру. Затем ответы на заявки приходят фреймворку и через обработать_ответы_на_заявки() фреймворк отправляет ответы в аналитику для обработки.
@@ -256,26 +273,7 @@ classDiagram
 
 
 -->
-## Процессы
-### Основной процесс
-
-```mermaid
-sequenceDiagram
-    participant Framework as Фреймворк
-    participant Analytics as ИнтерфейсАналитики
-    participant Broker as Брокер
-
-    activate Framework
-    Framework->>Analytics: обработать_свечи(аналитические свечи)
-    Analytics-->>Framework: возвращает заявки
-    Framework->>Broker: отправляет заявки
-    deactivate Framework
-    Broker-->>Framework: возвращает ответы
-    activate Framework
-    Framework->>Analytics: обработать_ответы_на_заявки(ответы на заявки)
-    deactivate Framework
-
-```
+<!-- ## Процессы -->
 
 <!-- ### Аналитические свечи
 ```mermaid
