@@ -140,7 +140,7 @@ classDiagram
 ```
 
 Описание функций для внешнего использования:
-- +обработать_свечи() — обрабатывает [аналитические свечи](#термины) и на основе них возвращает решение о покупке/продаже тикеров в виде [аналитических заявок](#аналитическаязаявка).
+- +обработать_свечи() — обрабатывает [аналитические свечи](#термины) и на основе них возвращает решение о покупке/продаже в виде [аналитических заявок](#аналитическаязаявка).
 - +обработать_ответы_на_заявки() — обрабатывает [ответы](#аналитическийответназаявку) на отправленные заявки.
 
 То, как происходит работа с интерфейсом, можно посмотреть [здесь](#общий-процесс).
@@ -151,18 +151,19 @@ sequenceDiagram
     participant Framework as Фреймворк
     participant AnalyticsInterface as ИнтерфейсАналитики
     participant Analytics as Аналитика
-    participant Broker as Брокер
+    participant Adapter as Адаптер
 
     activate Framework
     Framework->>AnalyticsInterface: вызывает `обработать_свечи(аналитические свечи)`
     AnalyticsInterface->>Analytics: передаёт свечи
     Analytics-->>AnalyticsInterface: возвращает заявки
     AnalyticsInterface-->>Framework: возвращает заявки
-    Framework->>Broker: отправляет заявки
+    Framework->>Adapter: отправляет заявки
     deactivate Framework
-    Broker-->>Framework: возвращает ответы
+    Adapter-->>Framework: возвращает ответы
     activate Framework
     Framework->>AnalyticsInterface: вызывает `обработать_ответы_на_заявки(ответы на заявки)`
+    AnalyticsInterface->>Analytics: передаёт ответы на заявки
     deactivate Framework
 ```
 <!-- Как пользоваться интерфейсом?
@@ -174,15 +175,15 @@ sequenceDiagram
 sequenceDiagram
     participant Framework as Фреймворк
     participant Analytics as Аналитика
-    participant Broker as Брокер
+    participant Adapter as Брокер
 
     activate Framework
     Framework->>Analytics: обработать_свечи(аналитические свечи)
     Analytics->>Framework: возвращает заявки
-    Framework->>Broker: отправляет заявки
+    Framework->>Adapter: отправляет заявки
     deactivate Framework
 
-    Broker->>Framework: возвращает ответы
+    Adapter->>Framework: возвращает ответы
     Framework->>Analytics: обработать_ответы_на_заявки(ответы на заявки)
 
 ``` -->
@@ -206,9 +207,9 @@ classDiagram
 Процесс работы:
 ```mermaid
 sequenceDiagram
-    participant ИнтерфейсАналитики 
-    participant Аналитика 
-    participant ИнтерфейсФреймворка 
+    participant ИнтерфейсАналитики
+    participant Аналитика
+    participant ИнтерфейсФреймворка
     participant Фреймворк
 
     Фреймворк->>ИнтерфейсАналитики: передаёт свечи для обработки
@@ -321,7 +322,7 @@ classDiagram
 Процесс работы:
 ```mermaid
 sequenceDiagram
-    Планировщик->>Свечи: Запускает отправку свечей в аналитику
+    Планировщик->>Свечи: Вызывает `передать_свечи_аналитике()`
     Свечи->>Сценарии: Запрашивает сценарии свечей
     Сценарии-->>Свечи: Возвращает сценарии свечей
     Свечи->>Адаптер: Запрашивает свечи
@@ -336,7 +337,7 @@ sequenceDiagram
 ### Индексы
 — модуль, отвечающий за индексы свечей, передаваемых в аналитику.
 
-У каждого набора свечей, передаваемых аналитике должен быть свой индекс. Эти индексы должны генерироваться по определённым правилам, которые должен реализовать модуль `Индексы`.
+Перед отправкой свечей в аналитику каждой свече должен быть присвоен определённый индекс. Данный модуль занимается генерацией этих индексов.
 
 ```mermaid
 classDiagram
